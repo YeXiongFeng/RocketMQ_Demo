@@ -15,7 +15,7 @@ public class Producer {
     public static void main(String[] args) throws MQClientException {
         //生产者
         DefaultMQProducer producer = new DefaultMQProducer("test-group");
-        producer.setNamesrvAddr("localhost:9876");//添加nameServer地址
+        producer.setNamesrvAddr("192.168.43.68:9876");//添加nameServer地址
         //默认情况下不设置instanceName，会使用ip@pid(pid代表jvm名字)作为唯一标识
         //如果同一个jvm中，不同的producer往不同的RocketMQ集群发送消息，需要不同的instanceName
         producer.setInstanceName("rem-instance");

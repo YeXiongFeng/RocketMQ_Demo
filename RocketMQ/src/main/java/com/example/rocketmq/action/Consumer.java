@@ -1,5 +1,6 @@
 package com.example.rocketmq.action;
 
+import com.example.rocketmq.RocketMqApplication;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
@@ -7,14 +8,20 @@ import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.message.MessageExt;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Component
 public class Consumer {
 
     public static void main(String[] args) throws MQClientException {
+        SpringApplication.run(RocketMqApplication.class, args);
         //创建consumer默认有两种方式：
         /*  DefaultMQPullConsumer：Consumer连接服务器端broker后，轮询请求获取消息
             DefaultMQPushConsumer(常用)：服务器端broker接收到消息后，主动将消息发给Consumer。
@@ -25,17 +32,24 @@ public class Consumer {
         DefaultMQPushConsumer consumer = new DefaultMQPushConsumer("push-group");
 
         //设置nameServer地址，如果有多个，可以用分号隔开
-        consumer.setNamesrvAddr("localhost:9876");
+        consumer.setNamesrvAddr("192.168.43.68:9876");
         //设置instanceName
-        consumer.setInstanceName("rem-instance");
+//        consumer.setInstanceName("rem-instance");
         //订阅指定topic和tag，订阅并不会创建topic，是由Producer创建topic的
-        consumer.subscribe("log-topic", "user-tag");
+        consumer.subscribe("seckill_topic", "*");
         //监听：有消息，唤醒监听调动ConsumerMessage
         consumer.registerMessageListener(new MessageListenerConcurrently() {
+            /**
+             *
+             * @param msgList ：Consumer开启前，可能就已经有消息发送了，会堆积，所以接受消息必须用List
+             * @param consumeConcurrentlyContext
+             * @return
+             */
             @Override
             public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgList, ConsumeConcurrentlyContext consumeConcurrentlyContext) {
                 for(MessageExt msg : msgList){
-                    System.out.println("消费者数据：" + new String(msg.getBody()));
+                    System.out.println("创建订单："+ new String(msg.getBody()));
+
                 }
                 return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             }
